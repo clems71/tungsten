@@ -44,6 +44,7 @@ protected:
     Vec3f _up;
 
     Vec2u _res;
+    Vec4u _viewport;
     float _ratio;
     Vec2f _pixelSize;
 
@@ -160,7 +161,7 @@ public:
 
     inline Vec3f getLinear(int x, int y) const
     {
-        int idx = x + y*_res.x();
+        int idx = x + y*_viewport.z();
         Vec3f result(0.0f);
         if (_colorBuffer)
             result += (*_colorBuffer)[idx]*_colorBufferWeight;
@@ -207,6 +208,11 @@ public:
     const Vec2u &resolution() const
     {
         return _res;
+    }
+
+    const Vec4u &viewport() const
+    {
+        return _viewport;
     }
 
     void setResolution(Vec2u res)

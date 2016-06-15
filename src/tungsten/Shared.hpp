@@ -323,7 +323,7 @@ public:
         if (!_scene || !_flattenedScene)
             return nullptr;
 
-        Vec2u res = _scene->camera()->resolution();
+        Vec2u res = _scene->camera()->viewport().zw();
         std::unique_ptr<Vec3c[]> ldr(new Vec3c[res.product()]);
 
         for (uint32 y = 0; y < res.y(); ++y)
@@ -339,4 +339,3 @@ public:
 }
 
 #endif /* SHARED_HPP_ */
-

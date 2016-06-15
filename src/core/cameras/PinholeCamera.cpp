@@ -63,18 +63,21 @@ bool PinholeCamera::samplePosition(PathSampleGenerator &/*sampler*/, PositionSam
 bool PinholeCamera::sampleDirection(PathSampleGenerator &sampler, const PositionSample &point,
         DirectionSample &sample) const
 {
-    Vec2u pixel(sampler.next2D()*Vec2f(_res));
+    printf("%d\n", _viewport.x());
+    printf("%d\n", _viewport.y());
+    Vec2u pixel(Vec2f(_viewport.xy()) + sampler.next2D()*Vec2f(_viewport.zw()));
     return sampleDirection(sampler, point, pixel, sample);
 }
 
 bool PinholeCamera::sampleDirection(PathSampleGenerator &sampler, const PositionSample &/*point*/, Vec2u pixel,
         DirectionSample &sample) const
 {
+    // printf("HERE\n");
     float pdf;
     Vec2f uv = _filter.sample(sampler.next2D(), pdf);
     Vec3f localD = Vec3f(
-        -1.0f  + (float(pixel.x()) + 0.5f + uv.x())*2.0f*_pixelSize.x(),
-        _ratio - (float(pixel.y()) + 0.5f + uv.y())*2.0f*_pixelSize.x(),
+        -1.0f  + (float(pixel.x() + _viewport.x()) + 0.5f + uv.x())*2.0f*_pixelSize.x(),
+        _ratio - (float(pixel.y() + _viewport.y()) + 0.5f + uv.y())*2.0f*_pixelSize.x(),
         _planeDist
     ).normalized();
 

@@ -50,6 +50,7 @@ void Camera::fromJson(const rapidjson::Value &v, const Scene &scene)
 
     JsonUtils::fromJson(v, "tonemap", _tonemapString);
     JsonUtils::fromJson(v, "resolution", _res);
+    JsonUtils::fromJson(v, "viewport", _viewport);
     if (medium != v.MemberEnd())
         _medium = scene.fetchMedium(medium->value);
     if (filter != v.MemberEnd())
@@ -78,6 +79,7 @@ rapidjson::Value Camera::toJson(Allocator &allocator) const
     JsonObject result{JsonSerializable::toJson(allocator), allocator,
         "tonemap", _tonemapString,
         "resolution", _res,
+        "viewport", _viewport,
         "reconstruction_filter", _filter.name(),
         "transform", JsonObject{allocator,
             "position", _pos,
@@ -144,11 +146,11 @@ void Camera::requestOutputBuffers(const std::vector<OutputBufferSettings> &setti
 {
     for (const auto &b : settings) {
         switch (b.type()) {
-        case OutputColor:           _colorBuffer.reset(new OutputBufferVec3f(_res, b)); break;
-        case OutputDepth:           _depthBuffer.reset(new OutputBufferF    (_res, b)); break;
-        case OutputNormal:         _normalBuffer.reset(new OutputBufferVec3f(_res, b)); break;
-        case OutputAlbedo:         _albedoBuffer.reset(new OutputBufferVec3f(_res, b)); break;
-        case OutputVisibility: _visibilityBuffer.reset(new OutputBufferF    (_res, b)); break;
+        case OutputColor:           _colorBuffer.reset(new OutputBufferVec3f(_viewport.zw(), b)); break;
+        case OutputDepth:           _depthBuffer.reset(new OutputBufferF    (_viewport.zw(), b)); break;
+        case OutputNormal:         _normalBuffer.reset(new OutputBufferVec3f(_viewport.zw(), b)); break;
+        case OutputAlbedo:         _albedoBuffer.reset(new OutputBufferVec3f(_viewport.zw(), b)); break;
+        case OutputVisibility: _visibilityBuffer.reset(new OutputBufferF    (_viewport.zw(), b)); break;
         default: break;
         }
     }
@@ -157,20 +159,20 @@ void Camera::requestOutputBuffers(const std::vector<OutputBufferSettings> &setti
 void Camera::requestColorBuffer()
 {
     if (!_colorBuffer)
-        _colorBuffer.reset(new OutputBufferVec3f(_res, _colorBufferSettings));
+        _colorBuffer.reset(new OutputBufferVec3f(_viewport.zw(), _colorBufferSettings));
     _colorBufferWeight = 1.0;
 }
 
 void Camera::requestSplatBuffer()
 {
-    _splatBuffer.reset(new AtomicFramebuffer(_res.x(), _res.y(), _filter));
+    _splatBuffer.reset(new AtomicFramebuffer(_viewport.z(), _viewport.w(), _filter));
     _splatWeight = 1.0;
 }
 
 void Camera::blitSplatBuffer()
 {
-    for (uint32 y = 0; y < _res.y(); ++y)
-        for (uint32 x = 0; x < _res.x(); ++x)
+    for (uint32 y = 0; y < _viewport.w(); ++y)
+        for (uint32 x = 0; x < _viewport.z(); ++x)
             _colorBuffer->addSample(Vec2u(x, y), _splatBuffer->get(x, y));
     _splatBuffer->unsafeReset();
 }

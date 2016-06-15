@@ -54,25 +54,26 @@ void Integrator::advanceSpp()
 
 void Integrator::writeBuffers(const std::string &suffix, bool overwrite)
 {
-    Vec2u res = _scene->cam().resolution();
-    std::unique_ptr<Vec3f[]> hdr(new Vec3f[res.product()]);
-    std::unique_ptr<Vec3c[]> ldr(new Vec3c[res.product()]);
+    // Vec2u res = _scene->cam().resolution();
+    Vec4u viewport = _scene->cam().viewport();
+    std::unique_ptr<Vec3f[]> hdr(new Vec3f[viewport.zw().product()]);
+    std::unique_ptr<Vec3c[]> ldr(new Vec3c[viewport.zw().product()]);
 
-    for (uint32 y = 0; y < res.y(); ++y)
-        for (uint32 x = 0; x < res.x(); ++x)
-            hdr[x + y*res.x()] = _scene->cam().getLinear(x, y);
+    for (uint32 y = 0; y < viewport.w(); ++y)
+        for (uint32 x = 0; x < viewport.z(); ++x)
+            hdr[x + y*viewport.z()] = _scene->cam().getLinear(x, y);
 
-    for (uint32 i = 0; i < res.product(); ++i)
+    for (uint32 i = 0; i < viewport.zw().product(); ++i)
         ldr[i] = Vec3c(clamp(Vec3i(_scene->cam().tonemap(hdr[i])*255.0f), Vec3i(0), Vec3i(255)));
 
     const RendererSettings &settings = _scene->rendererSettings();
 
     if (!settings.outputFile().empty())
         ImageIO::saveLdr(incrementalFilename(settings.outputFile(), suffix, overwrite),
-                &ldr[0].x(), res.x(), res.y(), 3);
+                &ldr[0].x(), viewport.z(), viewport.w(), 3);
     if (!settings.hdrOutputFile().empty())
         ImageIO::saveHdr(incrementalFilename(settings.hdrOutputFile(), suffix, overwrite),
-                &hdr[0].x(), res.x(), res.y(), 3);
+                &hdr[0].x(), viewport.z(), viewport.w(), 3);
 
     if (suffix.empty() && !settings.renderOutputs().empty())
         _scene->cam().saveOutputBuffers();

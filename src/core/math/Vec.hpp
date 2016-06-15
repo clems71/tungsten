@@ -93,6 +93,11 @@ public:
         return Vec<ElementType, 2>(x(), y());
     }
 
+    Vec<ElementType, 2> zw() const
+    {
+        return Vec<ElementType, 2>(z(), w());
+    }
+
     Vec<ElementType, 3> xyz() const
     {
         return Vec<ElementType, 3>(x(), y(), z());

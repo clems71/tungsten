@@ -148,8 +148,8 @@
     "camera": {
         "tonemap": "filmic",
         "resolution": [
-            1000,
-            563
+            64,
+            64
         ],
         "reconstruction_filter": "tent",
         "transform": {
@@ -175,7 +175,7 @@
     "integrator": {
         "type": "path_tracer",
         "min_bounces": 0,
-        "max_bounces": 64,
+        "max_bounces": 32,
         "enable_light_sampling": true,
         "enable_volume_light_sampling": true,
         "enable_consistency_checks": false,
@@ -189,8 +189,8 @@
         "enable_resume_render": false,
         "stratified_sampler": true,
         "scene_bvh": true,
-        "spp": 32,
-        "spp_step": 16,
+        "spp": 128,
+        "spp_step": 8,
         "checkpoint_interval": "15m"
     }
 }
